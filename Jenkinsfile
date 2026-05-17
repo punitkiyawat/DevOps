@@ -1,23 +1,55 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "devops-app"
+        CONTAINER_NAME = "devops-container"
+        PORT = "5000"
+    }
+
     stages {
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t devops-app -f docker/Dockerfile .'
+                sh '''
+                echo "Building Docker image..."
+                docker build -t $IMAGE_NAME -f docker/Dockerfile .
+                '''
             }
         }
 
         stage('Deploy') {
             steps {
                 sh '''
-                docker stop $(docker ps -aq) || true
-                docker rm -f $(docker ps -aq) || true
-                docker run -d -p 5001:5000 devops-app
+                echo "Stopping old container..."
+                docker stop $CONTAINER_NAME || true
+
+                echo "Removing old container..."
+                docker rm $CONTAINER_NAME || true
+
+                echo "Starting new container..."
+                docker run -d \
+                  --name $CONTAINER_NAME \
+                  -p $PORT:$PORT \
+                  --restart unless-stopped \
+                  $IMAGE_NAME
                 '''
             }
         }
+    }
 
+    post {
+        success {
+            echo '✅ Deployment successful!'
+        }
+        failure {
+            echo '❌ Deployment failed!'
+        }
     }
 }
