@@ -4,7 +4,6 @@ pipeline {
     environment {
         IMAGE_NAME = "devops-app"
         CONTAINER_NAME = "devops-container"
-        PORT = "5001"
     }
 
     stages {
@@ -24,33 +23,27 @@ pipeline {
             }
         }
 
-        stage('Free Port') {
-            steps {
-                sh '''
-                echo "Freeing port 5001 if used..."
-
-                # Try to kill process using port (without sudo)
-                fuser -k 5001/tcp || true
-
-                echo "Stopping all containers..."
-                docker ps -q | xargs -r docker stop || true
-
-                echo "Removing all containers..."
-                docker ps -aq | xargs -r docker rm || true
-                '''
-            }
-        }
-
         stage('Deploy') {
             steps {
                 sh '''
-                echo "Starting new container..."
+                echo "Stopping existing container (if any)..."
+                docker stop $CONTAINER_NAME || true
+
+                echo "Removing existing container..."
+                docker rm $CONTAINER_NAME || true
+
+                echo "Starting container on a FREE random port..."
 
                 docker run -d \
                   --name $CONTAINER_NAME \
-                  -p 5001:5000 \
+                  -P \
                   --restart unless-stopped \
                   $IMAGE_NAME
+
+                echo "Container started successfully ✅"
+
+                echo "Check running container:"
+                docker ps
                 '''
             }
         }
