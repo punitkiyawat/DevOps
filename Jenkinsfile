@@ -29,10 +29,10 @@ pipeline {
                 sh '''
                 echo "Freeing port 5001 if used..."
 
-                # Kill any process using port 5001
-                sudo fuser -k 5001/tcp || true
+                # Try to kill process using port (without sudo)
+                fuser -k 5001/tcp || true
 
-                echo "Stopping all running containers (safe)..."
+                echo "Stopping all containers..."
                 docker ps -q | xargs -r docker stop || true
 
                 echo "Removing all containers..."
