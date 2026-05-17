@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = "devops-app"
         CONTAINER_NAME = "devops-container"
-        PORT = "5000"
+        PORT = "5001"
     }
 
     stages {
@@ -33,10 +33,10 @@ pipeline {
                 echo "Removing old container..."
                 docker rm $CONTAINER_NAME || true
 
-                echo "Starting new container..."
+                echo "Starting new container on port 5001..."
                 docker run -d \
                   --name $CONTAINER_NAME \
-                  -p $PORT:$PORT \
+                  -p 5001:5000 \
                   --restart unless-stopped \
                   $IMAGE_NAME
                 '''
