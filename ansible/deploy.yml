@@ -1,0 +1,11 @@
+- name: Deploy Docker Container
+  hosts: localhost
+  tasks:
+    - name: Stop container
+      shell: docker stop devops-app || true
+
+    - name: Remove container
+      shell: docker rm devops-app || true
+
+    - name: Run container
+      shell: docker run -d -p 5000:5000 --name devops-app devops-app
