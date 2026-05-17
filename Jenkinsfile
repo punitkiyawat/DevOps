@@ -24,16 +24,28 @@ pipeline {
             }
         }
 
+        stage('Free Port') {
+            steps {
+                sh '''
+                echo "Freeing port 5001 if used..."
+
+                # Kill any process using port 5001
+                sudo fuser -k 5001/tcp || true
+
+                echo "Stopping all running containers (safe)..."
+                docker ps -q | xargs -r docker stop || true
+
+                echo "Removing all containers..."
+                docker ps -aq | xargs -r docker rm || true
+                '''
+            }
+        }
+
         stage('Deploy') {
             steps {
                 sh '''
-                echo "Stopping old container..."
-                docker stop $CONTAINER_NAME || true
+                echo "Starting new container..."
 
-                echo "Removing old container..."
-                docker rm $CONTAINER_NAME || true
-
-                echo "Starting new container on port 5001..."
                 docker run -d \
                   --name $CONTAINER_NAME \
                   -p 5001:5000 \
