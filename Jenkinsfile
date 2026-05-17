@@ -12,8 +12,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                docker rm -f devops-container || true
-                docker run -d --name devops-container -p 5001:5000 devops-app
+                docker stop $(docker ps -aq) || true
+                docker rm -f $(docker ps -aq) || true
+                docker run -d -p 5001:5000 devops-app
                 '''
             }
         }
