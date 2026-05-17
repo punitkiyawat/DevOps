@@ -2,6 +2,7 @@ pipeline {
     agent any
 
     stages {
+
         stage('Build Docker Image') {
             steps {
                 sh 'docker build -t devops-app -f docker/Dockerfile .'
@@ -9,10 +10,13 @@ pipeline {
         }
 
         stage('Deploy') {
-    steps {
-        sh '''
-        docker rm -f devops-container || true
-        docker run -d --name devops-container -p 5001:5000 devops-app
-        '''
+            steps {
+                sh '''
+                docker rm -f devops-container || true
+                docker run -d --name devops-container -p 5001:5000 devops-app
+                '''
+            }
+        }
+
     }
 }
